@@ -203,11 +203,17 @@ function recordClick(id) {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  serverUrl = lsGet(LS_SERVER, '');
-  if (serverUrl) document.getElementById('serverInput').value = serverUrl;
+function init() {
+  try {
+    serverUrl = lsGet(LS_SERVER, '');
+    if (serverUrl) document.getElementById('serverInput').value = serverUrl;
+  } catch(e) {}
 
-  links = lsGetJSON(LS_LINKS, []);
+  try {
+    var raw = localStorage.getItem(LS_LINKS);
+    links = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(links)) links = [];
+  } catch(e) { links = []; }
 
   // Handle pending click ping
   if (window._pendingClick) {
@@ -217,9 +223,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
   render();
 
-  document.getElementById('inName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inUrl').focus(); });
-  document.getElementById('inUrl').addEventListener('keydown',  e => { if(e.key==='Enter') addLink(); });
-});
+  document.getElementById('inName').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('inUrl').focus(); });
+  document.getElementById('inUrl').addEventListener('keydown',  function(e){ if(e.key==='Enter') addLink(); });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 // ─── Server URL ───────────────────────────────────────────────────────────────
 function saveServer() {
