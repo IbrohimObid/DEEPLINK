@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yo'naltirilmoqda…</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0d0f0e;color:#e8ede9;font-family:monospace;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;text-align:center}
+  .spinner{width:28px;height:28px;border:2px solid #222824;
+  border-top-color:#39ff7a;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 18px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h2{font-size:15px;color:#39ff7a;margin-bottom:6px;font-weight:600}
+  p{font-size:11px;color:#5a6b5e;margin:3px 0}
+  .manual{margin-top:24px;font-size:12px}
+  .manual a{color:#39ff7a;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<h2>Yo'naltirilmoqda…</h2>
+<p id="st">Qurilma aniqlanmoqda</p>
+<div class="manual"><a href="#" id="ml">Avtomatik ochilmasa bosing</a></div>
+<script>
+(function(){
+  var p    = new URLSearchParams(location.search);
+  var ios  = p.get('ios');
+  var and  = p.get('android');
+  var fb   = p.get('url') || 'https://youtube.com';
+  var cb   = p.get('cb');
+  var id   = p.get('id');
+
+  document.getElementById('ml').href = fb;
+
+  // Click ping
+  if (cb && id) {
+    try { localStorage.setItem('dl_click_ping', JSON.stringify({id:id,t:Date.now()})); } catch(e){}
+  }
+
+  var ua        = navigator.userAgent;
+  var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  var isAndroid = /Android/.test(ua);
+
+  // --- DESKTOP ---
+  if (!isIOS && !isAndroid) {
+    document.getElementById('st').textContent = 'Desktop — yo\'naltirmoqda…';
+    window.location.replace(fb);
+    return;
+  }
+
+  // --- iOS ---
+  if (isIOS) {
+    document.getElementById('st').textContent = 'iOS — app ochilmoqda…';
+    var gone = false;
+    var timer = setTimeout(function(){
+      if (!gone){ gone=true; window.location.replace(fb); }
+    }, 2000);
+    document.addEventListener('visibilitychange',function(){
+      if(document.hidden){ gone=true; clearTimeout(timer); }
+    });
+    // iOS universal link — Safari opens YouTube app directly
+    window.location.href = ios || fb;
+    return;
+  }
+
+  // --- ANDROID ---
+  // Extract YouTube video ID from fallback URL for direct intent
+  document.getElementById('st').textContent = 'Android — app ochilmoqda…';
+
+  // Try intent:// scheme which is most reliable on Android Chrome
+  var intentUrl = and;
+
+  // If intent scheme is available, use it
+  // Android Chrome handles intent:// natively and shows "Open with" if app installed
+  if (intentUrl && intentUrl.startsWith('intent://')) {
+    // intent:// is handled by Android system, no timeout needed —
+    // if app not installed it follows S.browser_fallback_url automatically
+    window.location.href = intentUrl;
+    return;
+  }
+
+  // Fallback: try generic scheme then redirect
+  var gone2 = false;
+  var timer2 = setTimeout(function(){
+    if(!gone2){ gone2=true; window.location.replace(fb); }
+  }, 2000);
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){ gone2=true; clearTimeout(timer2); }
+  });
+  window.location.href = intentUrl || fb;
+
+})();
+</script>
+</body></html>
