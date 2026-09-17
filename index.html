@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepLink Manager — Ajib Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f0e; --surface:#141716; --border:#222824;
+    --green:#39ff7a; --green-dim:#1a7a3a;
+    --text:#e8ede9; --muted:#5a6b5e; --error:#ff5252;
+    --mono:'JetBrains Mono',monospace; --sans:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px}
+
+  header{text-align:center;margin-bottom:32px;width:100%;max-width:660px}
+  .logo{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--green);opacity:0.6;margin-bottom:8px}
+  h1{font-family:var(--mono);font-size:clamp(22px,4vw,34px);font-weight:700}
+  h1 span{color:var(--green)}
+
+  /* Server bar */
+  .server-bar{
+    width:100%;max-width:660px;
+    display:flex;align-items:center;gap:10px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:12px 16px;margin-bottom:20px;
+  }
+  .server-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;white-space:nowrap;flex-shrink:0}
+  .server-bar input{flex:1;background:transparent;border:none;outline:none;
+    font-family:var(--mono);font-size:12px;color:var(--text);min-width:0}
+  .server-bar input::placeholder{color:var(--muted)}
+
+  /* Buttons */
+  .btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.06em;
+    padding:10px 18px;border-radius:7px;cursor:pointer;border:none;transition:opacity 0.15s,transform 0.1s}
+  .btn:active{transform:scale(0.97)}
+  .btn-primary{background:var(--green);color:#0d0f0e}
+  .btn-primary:hover{opacity:0.85}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 14px;font-size:11px}
+  .btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+  .btn-danger{background:transparent;border:1px solid transparent;color:var(--error);
+    font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.04em;
+    padding:8px 12px;border-radius:7px;cursor:pointer;opacity:0.55;transition:opacity 0.15s,border-color 0.15s}
+  .btn-danger:hover{opacity:1;border-color:var(--error)}
+
+  /* Add form */
+  .add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:22px;width:100%;max-width:660px;margin-bottom:16px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .field-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;
+    margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+  input[type=text],input[type=url]{width:100%;background:var(--bg);border:1px solid var(--border);
+    border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;
+    padding:10px 13px;outline:none;transition:border-color 0.15s}
+  input:focus{border-color:var(--green-dim)}
+  input::placeholder{color:var(--muted)}
+  .err{font-family:var(--mono);font-size:11px;color:var(--error);margin-top:6px;display:none}
+  .err.show{display:block}
+
+  /* Add toggle */
+  .add-toggle{width:100%;max-width:660px;background:transparent;border:1px dashed var(--border);
+    border-radius:12px;padding:14px;font-family:var(--mono);font-size:12px;color:var(--muted);
+    cursor:pointer;letter-spacing:0.06em;margin-bottom:20px;transition:all 0.15s;text-align:center}
+  .add-toggle:hover{border-color:var(--green-dim);color:var(--green)}
+
+  /* Link cards */
+  .links-wrap{width:100%;max-width:660px;display:flex;flex-direction:column;gap:10px}
+  .link-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+
+  .lc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .lc-info{flex:1;min-width:0}
+  .lc-name{font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lc-meta{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.07em}
+  .lc-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
+
+  .lc-deeplink{background:var(--bg);border:1px solid var(--border);border-radius:6px;
+    padding:8px 36px 8px 12px;font-family:var(--mono);font-size:10px;color:var(--muted);
+    word-break:break-all;line-height:1.5;cursor:pointer;transition:border-color 0.15s,color 0.15s;
+    position:relative;margin-bottom:10px}
+  .lc-deeplink:hover{border-color:var(--green-dim);color:var(--green)}
+  .lc-deeplink::after{content:'⌘C';position:absolute;top:7px;right:9px;font-size:9px;color:var(--muted);opacity:0.5}
+
+  .lc-stats{display:flex;align-items:center;gap:20px;padding-top:10px;border-top:1px solid var(--border)}
+  .stat-item{display:flex;align-items:baseline;gap:5px}
+  .stat-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);line-height:1}
+  .stat-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em}
+  .stat-date{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.06em;margin-left:auto}
+
+  /* Click ping receiver iframe (hidden) */
+  #pingReceiver{display:none;width:0;height:0;border:none}
+
+  /* Empty / loading */
+  .empty{text-align:center;padding:48px 24px;font-family:var(--mono);font-size:12px;
+    color:var(--muted);letter-spacing:0.06em;border:1px dashed var(--border);border-radius:12px}
+  .spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--green);
+    border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);
+    background:var(--green);color:#0d0f0e;font-family:var(--mono);font-size:12px;font-weight:700;
+    padding:10px 20px;border-radius:6px;opacity:0;transition:all 0.2s;pointer-events:none;
+    letter-spacing:0.06em;white-space:nowrap;z-index:999}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:500px){.row2{grid-template-columns:1fr}.lc-actions{flex-wrap:wrap}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ajib studio</div>
+  <h1>Deep<span>Link</span> Manager</h1>
+</header>
+
+<!-- Server URL bar -->
+<div class="server-bar">
+  <span class="server-lbl">REDIRECT URL</span>
+  <input type="url" id="serverInput" placeholder="https://ibrohimobid.github.io/DEEPLINK/redirect.html" autocomplete="off" spellcheck="false">
+  <button class="btn btn-ghost" onclick="saveServer()">Saqlash</button>
+</div>
+
+<!-- Add form -->
+<div class="add-card" id="addCard" style="display:none">
+  <div class="row2">
+    <div>
+      <div class="field-label"><span class="dot"></span> LINK NOMI</div>
+      <input type="text" id="inName" placeholder="Masalan: Ajib Studio intro">
+    </div>
+    <div>
+      <div class="field-label"><span class="dot"></span> MAQSAD HAVOLA</div>
+      <input type="url" id="inUrl" placeholder="https://youtube.com/watch?v=...">
+    </div>
+  </div>
+  <div id="addErr" class="err"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="addLink()">+ Qo'shish</button>
+</div>
+
+<button class="add-toggle" id="addToggle" onclick="toggleAdd()">+ Yangi deep link qo'shish</button>
+
+<div class="links-wrap" id="linksWrap">
+  <div class="empty"><div class="spinner"></div>Yuklanmoqda…</div>
+</div>
+
+<!-- Hidden iframe for receiving click pings from redirect.html -->
+<iframe id="pingReceiver"></iframe>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Storage ──────────────────────────────────────────────────────────────────
+const LS_SERVER = 'dl_server_v3';
+const LS_LINKS  = 'dl_links_v3';
+
+function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v!==null?v:def; }catch(e){ return def; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v)); }catch(e){} }
+function lsGetJSON(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let links = [];
+let serverUrl = '';
+let addOpen = false;
+
+// ─── Click ping receiver ──────────────────────────────────────────────────────
+// redirect.html loads manager URL with ?click=ID — we handle it here too
+// But since redirect.html opens in a new context, we use BroadcastChannel + localStorage event
+
+window.addEventListener('storage', e => {
+  if (e.key === 'dl_click_ping') {
+    try {
+      const { id } = JSON.parse(e.newValue);
+      recordClick(id);
+    } catch(_) {}
+  }
+});
+
+// Also handle if this page itself receives ?click= (user visits manager URL with param)
+(function handleSelfPing(){
+  const p = new URLSearchParams(location.search);
+  const clickId = p.get('click');
+  if (clickId) {
+    // Remove param from URL without reload
+    const clean = location.pathname + (location.hash || '');
+    history.replaceState(null,'',clean);
+    // Record after links load
+    window._pendingClick = clickId;
+  }
+})();
+
+function recordClick(id) {
+  const idx = links.findIndex(l => l.id === id);
+  if (idx === -1) return;
+  links[idx].clicks = (links[idx].clicks || 0) + 1;
+  links[idx].lastClick = Date.now();
+  saveLinks();
+  render();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  serverUrl = lsGet(LS_SERVER, '');
+  if (serverUrl) document.getElementById('serverInput').value = serverUrl;
+
+  links = lsGetJSON(LS_LINKS, []);
+
+  // Handle pending click ping
+  if (window._pendingClick) {
+    recordClick(window._pendingClick);
+    window._pendingClick = null;
+  }
+
+  render();
+
+  document.getElementById('inName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inUrl').focus(); });
+  document.getElementById('inUrl').addEventListener('keydown',  e => { if(e.key==='Enter') addLink(); });
+});
+
+// ─── Server URL ───────────────────────────────────────────────────────────────
+function saveServer() {
+  let v = document.getElementById('serverInput').value.trim();
+  if (!v) { toast('URL kiriting'); return; }
+  if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+  if (!v.endsWith('redirect.html')) {
+    if (!v.endsWith('/')) v += '/';
+    v += 'redirect.html';
+    document.getElementById('serverInput').value = v;
+  }
+  serverUrl = v;
+  lsSet(LS_SERVER, v);
+  // Rebuild all deeplinks with new server
+  links = links.map(l => ({...l, deeplink: buildDeepLink(l.id, getSchemes(l.url))}));
+  saveLinks();
+  render();
+  toast('Server URL saqlandi ✓');
+}
+
+// ─── Manager URL (for click callback) ────────────────────────────────────────
+function getManagerUrl() {
+  // Current page URL without query/hash
+  return location.origin + location.pathname;
+}
+
+// ─── Parsers & schemes ────────────────────────────────────────────────────────
+function parseYouTube(url) {
+  const pats = [/[?&]v=([a-zA-Z0-9_-]{11})/,/youtu\.be\/([a-zA-Z0-9_-]{11})/,/youtube\.com\/(?:shorts|embed|live)\/([a-zA-Z0-9_-]{11})/];
+  for(const p of pats){ const m=url.match(p); if(m) return m[1]; }
+  return null;
+}
+
+function getSchemes(url) {
+  const e = s => encodeURIComponent(s);
+  const yt = parseYouTube(url);
+  if(yt) return { appName:'YouTube', ios:`vnd.youtube://${yt}`, android:`intent://www.youtube.com/watch?v=${yt}#Intent;package=com.google.android.youtube;scheme=https;S.browser_fallback_url=${e(url)};end`, fallback:`https://www.youtube.com/watch?v=${yt}` };
+
+  if(/instagram\.com/.test(url)){
+    const path=url.replace(/https?:\/\/(?:www\.)?instagram\.com/,'').split('?')[0].replace(/\/$/,'');
+    return { appName:'Instagram', ios:`instagram://www.instagram.com${path}`, android:`intent://www.instagram.com${path}#Intent;package=com.instagram.android;scheme=https;S.browser_fallback_url=${e(url)};end`, fallback:url };
+  }
+  const sp=url.match(/spotify\.com\/(track|album|playlist|artist|episode)\/([a-zA-Z0-9]+)/);
+  if(sp){ const u=`spotify:${sp[1]}:${sp[2]}`; return { appName:'Spotify', ios:u, android:u, fallback:url }; }
+
+  const tg=url.match(/t\.me\/([a-zA-Z0-9_]+)/);
+  if(tg){ const s=`tg://resolve?domain=${tg[1]}`; return { appName:'Telegram', ios:s, android:s, fallback:url }; }
+
+  const tw=url.match(/(?:twitter|x)\.com\/([a-zA-Z0-9_]+)(?:\/status\/(\d+))?/);
+  if(tw){ const s=tw[2]?`twitter://status?id=${tw[2]}`:`twitter://user?screen_name=${tw[1]}`; return { appName:'Twitter/X', ios:s, android:s, fallback:url }; }
+
+  const tt=url.match(/tiktok\.com\/@([^/]+)\/video\/(\d+)/);
+  if(tt){ const s=`snssdk1233://aweme/detail/?id=${tt[2]}`; return { appName:'TikTok', ios:s, android:s, fallback:url }; }
+
+  const rd=url.match(/reddit\.com(\/r\/[^?#]+)/);
+  if(rd) return { appName:'Reddit', ios:`reddit://reddit.com${rd[1]}`, android:`reddit://reddit.com${rd[1]}`, fallback:url };
+
+  return { appName:'Browser', ios:null, android:null, fallback:url };
+}
+
+function buildDeepLink(id, schemes) {
+  if (!serverUrl) return '';
+  const p = new URLSearchParams();
+  if (schemes.ios)     p.set('ios', schemes.ios);
+  if (schemes.android) p.set('android', schemes.android);
+  p.set('url', schemes.fallback);
+  p.set('id',  id);
+  p.set('cb',  getManagerUrl());   // callback: manager URL
+  return serverUrl + '?' + p.toString();
+}
+
+// ─── Toggle ───────────────────────────────────────────────────────────────────
+function toggleAdd() {
+  addOpen = !addOpen;
+  document.getElementById('addCard').style.display = addOpen ? 'block' : 'none';
+  document.getElementById('addToggle').textContent = addOpen ? '✕ Yopish' : '+ Yangi deep link qo\'shish';
+  if (addOpen) setTimeout(() => document.getElementById('inName').focus(), 50);
+}
+
+// ─── Add ──────────────────────────────────────────────────────────────────────
+function addLink() {
+  const name = document.getElementById('inName').value.trim();
+  let   url  = document.getElementById('inUrl').value.trim();
+  const err  = document.getElementById('addErr');
+  err.classList.remove('show');
+
+  if (!name)      { err.textContent='Nom kiriting.';      err.classList.add('show'); return; }
+  if (!url)       { err.textContent='Havola kiriting.';   err.classList.add('show'); return; }
+  if (!serverUrl) { err.textContent='Avval server URL ni saqlang.'; err.classList.add('show'); return; }
+
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  try { new URL(url); } catch(e) { err.textContent='Noto\'g\'ri URL.'; err.classList.add('show'); return; }
+
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+  const schemes = getSchemes(url);
+  const deeplink = buildDeepLink(id, schemes);
+
+  links.unshift({ id, name, url, deeplink, appName: schemes.appName, clicks: 0, created: Date.now() });
+  saveLinks(); render();
+
+  document.getElementById('inName').value = '';
+  document.getElementById('inUrl').value  = '';
+  if (addOpen) toggleAdd();
+  toast('Link qo\'shildi ✓');
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+function deleteLink(id) {
+  if (!confirm('Bu linkni o\'chirasizmi?')) return;
+  links = links.filter(l => l.id !== id);
+  saveLinks(); render();
+  toast('O\'chirildi ✓');
+}
+
+// ─── Save ─────────────────────────────────────────────────────────────────────
+function saveLinks() { lsSet(LS_LINKS, links); }
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+function copyLink(txt) {
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Nusxa olindi ✓'))
+    .catch(() => { const t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); toast('Nusxa olindi ✓'); });
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+const ICONS = { YouTube:'▶', Instagram:'◆', Spotify:'●', Telegram:'✈', 'Twitter/X':'✦', TikTok:'▸', Reddit:'◈', Browser:'⊕' };
+
+function render() {
+  const wrap = document.getElementById('linksWrap');
+  if (!links.length) {
+    wrap.innerHTML = '<div class="empty">Hali hech qanday link yo\'q.<br>Yuqoridagi "+" tugmani bosib qo\'shing.</div>';
+    return;
+  }
+  wrap.innerHTML = links.map(l => {
+    const icon = ICONS[l.appName] || '⊕';
+    const date = new Date(l.created).toLocaleDateString('uz-UZ', { day:'2-digit', month:'short', year:'numeric' });
+    const lastClick = l.lastClick ? 'Oxirgi: ' + new Date(l.lastClick).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short'}) : '';
+    const dl = l.deeplink || '';
+    const dlShort = dl.length > 72 ? dl.slice(0,72)+'…' : dl;
+    return `
+    <div class="link-card" id="lc-${l.id}">
+      <div class="lc-top">
+        <div class="lc-info">
+          <div class="lc-name">${esc(l.name)}</div>
+          <div class="lc-meta">${icon} ${l.appName} &middot; ${date}</div>
+        </div>
+        <div class="lc-actions">
+          <button class="btn btn-ghost" onclick="copyLink(${JSON.stringify(dl)})">Nusxa</button>
+          <button class="btn-danger" onclick="deleteLink('${l.id}')">O'chir</button>
+        </div>
+      </div>
+      <div class="lc-deeplink" onclick="copyLink(${JSON.stringify(dl)})" title="Bosib nusxa oling">${esc(dlShort)}</div>
+      <div class="lc-stats">
+        <div class="stat-item">
+          <span class="stat-num">${l.clicks||0}</span>
+          <span class="stat-lbl">BOSISH</span>
+        </div>
+        ${lastClick ? `<span class="stat-date">${lastClick}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
