@@ -3,52 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d0f0e">
 <title>DeepLink Manager — Ajib Studio</title>
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f0e;--surface:#141716;--border:#222824;--green:#39ff7a;--green-dim:#1a7a3a;--text:#e8ede9;--muted:#5a6b5e;--error:#ff5252;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px}
-header{text-align:center;margin-bottom:32px;width:100%;max-width:660px}
+/* Auth */
+.auth-wrap{width:100%;max-width:400px;margin-top:60px}
+.auth-logo{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--green);opacity:0.6;margin-bottom:10px;text-align:center}
+.auth-title{font-family:var(--mono);font-size:28px;font-weight:700;text-align:center;margin-bottom:32px}
+.auth-title span{color:var(--green)}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px}
+.field-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.field{margin-bottom:16px}
+input[type=text],input[type=email],input[type=password],input[type=url]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:13px;padding:12px 14px;outline:none;transition:border-color 0.15s}
+input:focus{border-color:var(--green-dim)}
+input::placeholder{color:var(--muted)}
+.btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.06em;padding:12px 18px;border-radius:7px;cursor:pointer;border:none;transition:opacity 0.15s;width:100%;margin-top:4px}
+.btn-primary{background:var(--green);color:#0d0f0e}
+.btn-primary:hover{opacity:0.85}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:11px;margin-top:10px}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn-sm{width:auto;padding:8px 14px;font-size:11px}
+.btn-danger-sm{background:transparent;border:1px solid transparent;color:var(--error);font-family:var(--mono);font-size:11px;font-weight:600;padding:8px 12px;border-radius:7px;cursor:pointer;opacity:0.55;transition:opacity 0.15s}
+.btn-danger-sm:hover{opacity:1;border-color:var(--error)}
+.err{font-family:var(--mono);font-size:11px;color:var(--error);margin-top:8px;display:none;text-align:center}
+.err.show{display:block}
+.auth-switch{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:16px}
+.auth-switch a{color:var(--green);cursor:pointer;text-decoration:none}
+/* App */
+.app-wrap{display:none;width:100%;max-width:660px}
+header{text-align:center;margin-bottom:28px;width:100%}
 .logo{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--green);opacity:0.6;margin-bottom:8px}
-h1{font-family:var(--mono);font-size:clamp(22px,4vw,34px);font-weight:700}
+h1{font-family:var(--mono);font-size:clamp(22px,4vw,32px);font-weight:700}
 h1 span{color:var(--green)}
-.server-bar{width:100%;max-width:660px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:20px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.user-info{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em}
+.server-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 16px;margin-bottom:16px}
 .server-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;white-space:nowrap;flex-shrink:0}
 .server-bar input{flex:1;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:12px;color:var(--text);min-width:0}
 .server-bar input::placeholder{color:var(--muted)}
-.btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.06em;padding:10px 18px;border-radius:7px;cursor:pointer;border:none;transition:opacity 0.15s}
-.btn-primary{background:var(--green);color:#0d0f0e;width:100%;margin-top:4px}
-.btn-primary:hover{opacity:0.85}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 14px;font-size:11px}
-.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
-.btn-danger{background:transparent;border:1px solid transparent;color:var(--error);font-family:var(--mono);font-size:11px;font-weight:600;padding:8px 12px;border-radius:7px;cursor:pointer;opacity:0.55;transition:opacity 0.15s}
-.btn-danger:hover{opacity:1;border-color:var(--error)}
-.add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;width:100%;max-width:660px;margin-bottom:16px}
+.add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:14px;display:none}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.field-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-input[type=text],input[type=url]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;padding:10px 13px;outline:none;transition:border-color 0.15s}
-input:focus{border-color:var(--green-dim)}
-input::placeholder{color:var(--muted)}
-.err{font-family:var(--mono);font-size:11px;color:var(--error);margin-top:6px;display:none}
-.err.show{display:block}
-.add-toggle{width:100%;max-width:660px;background:transparent;border:1px dashed var(--border);border-radius:12px;padding:14px;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;letter-spacing:0.06em;margin-bottom:20px;transition:all 0.15s;text-align:center}
+.add-toggle{width:100%;background:transparent;border:1px dashed var(--border);border-radius:12px;padding:13px;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;letter-spacing:0.06em;margin-bottom:18px;transition:all 0.15s;text-align:center}
 .add-toggle:hover{border-color:var(--green-dim);color:var(--green)}
-.links-wrap{width:100%;max-width:660px;display:flex;flex-direction:column;gap:10px}
+.links-wrap{display:flex;flex-direction:column;gap:10px}
 .link-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
 .lc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
 .lc-info{flex:1;min-width:0}
 .lc-name{font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lc-meta{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.07em}
+.lc-meta{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .lc-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
 .lc-deeplink{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--muted);word-break:break-all;line-height:1.5;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s,color 0.15s}
 .lc-deeplink:hover{border-color:var(--green-dim);color:var(--green)}
-.lc-stats{display:flex;align-items:center;gap:20px;padding-top:10px;border-top:1px solid var(--border)}
+.lc-stats{display:flex;align-items:center;gap:16px;padding-top:10px;border-top:1px solid var(--border)}
 .stat-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);line-height:1}
 .stat-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;margin-left:5px}
 .stat-date{font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto}
-.empty{text-align:center;padding:40px 24px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.06em;border:1px dashed var(--border);border-radius:12px;width:100%;max-width:660px}
+.empty{text-align:center;padding:40px 24px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.06em;border:1px dashed var(--border);border-radius:12px}
+.loading-wrap{text-align:center;padding:40px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--green);color:#0d0f0e;font-family:var(--mono);font-size:12px;font-weight:700;padding:10px 20px;border-radius:6px;opacity:0;transition:all 0.2s;pointer-events:none;letter-spacing:0.06em;white-space:nowrap;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:500px){.row2{grid-template-columns:1fr}.lc-actions{flex-wrap:wrap}}
@@ -56,102 +75,162 @@ input::placeholder{color:var(--muted)}
 </head>
 <body>
 
-<header>
-  <div class="logo">ajib studio</div>
-  <h1>Deep<span>Link</span> Manager</h1>
-</header>
+<!-- AUTH -->
+<div class="auth-wrap" id="authWrap">
+  <div class="auth-logo">ajib studio</div>
+  <div class="auth-title">Deep<span>Link</span></div>
 
-<div class="server-bar">
-  <span class="server-lbl">REDIRECT URL</span>
-  <input type="url" id="serverInput" placeholder="https://ibrohimobid.github.io/DEEPLINK/redirect.html" autocomplete="off" spellcheck="false">
-  <button class="btn btn-ghost" onclick="saveServer()">Saqlash</button>
-</div>
-
-<div class="add-card" id="addCard" style="display:none">
-  <div class="row2">
-    <div>
-      <div class="field-label"><span class="dot"></span> LINK NOMI</div>
-      <input type="text" id="inName" placeholder="Masalan: Ajib Studio intro">
+  <!-- Login -->
+  <div class="auth-card" id="loginCard">
+    <div class="field">
+      <div class="field-label"><span class="dot"></span> EMAIL</div>
+      <input type="email" id="loginEmail" placeholder="email@gmail.com" autocomplete="email">
     </div>
-    <div>
-      <div class="field-label"><span class="dot"></span> MAQSAD HAVOLA</div>
-      <input type="url" id="inUrl" placeholder="https://youtube.com/watch?v=...">
+    <div class="field">
+      <div class="field-label"><span class="dot"></span> PAROL</div>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
+    <div id="loginErr" class="err"></div>
+    <button class="btn btn-primary" onclick="doLogin()">Kirish</button>
+    <div class="auth-switch">Akkaunt yo'qmi? <a onclick="showRegister()">Ro'yxatdan o'tish</a></div>
   </div>
-  <div id="addErr" class="err"></div>
-  <button class="btn btn-primary" onclick="addLink()">+ Qo&#x2019;shish</button>
+
+  <!-- Register -->
+  <div class="auth-card" id="regCard" style="display:none">
+    <div class="field">
+      <div class="field-label"><span class="dot"></span> EMAIL</div>
+      <input type="email" id="regEmail" placeholder="email@gmail.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <div class="field-label"><span class="dot"></span> PAROL</div>
+      <input type="password" id="regPass" placeholder="kamida 6 ta belgi" autocomplete="new-password">
+    </div>
+    <div id="regErr" class="err"></div>
+    <button class="btn btn-primary" onclick="doRegister()">Ro'yxatdan o'tish</button>
+    <div class="auth-switch">Akkaunt bormi? <a onclick="showLogin()">Kirish</a></div>
+  </div>
 </div>
 
-<button class="add-toggle" id="addToggle" onclick="toggleAdd()">+ Yangi deep link qo&#x2019;shish</button>
+<!-- APP -->
+<div class="app-wrap" id="appWrap">
+  <header>
+    <div class="logo">ajib studio</div>
+    <h1>Deep<span>Link</span> Manager</h1>
+  </header>
 
-<div class="links-wrap" id="linksWrap"></div>
+  <div class="topbar">
+    <div class="user-info" id="userInfo"></div>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Chiqish</button>
+  </div>
+
+  <div class="server-bar">
+    <span class="server-lbl">REDIRECT URL</span>
+    <input type="url" id="serverInput" placeholder="https://ibrohimobid.github.io/DEEPLINK/redirect.html" autocomplete="off" spellcheck="false">
+    <button class="btn btn-ghost btn-sm" onclick="saveServer()">Saqlash</button>
+  </div>
+
+  <div class="add-card" id="addCard">
+    <div class="row2">
+      <div>
+        <div class="field-label"><span class="dot"></span> LINK NOMI</div>
+        <input type="text" id="inName" placeholder="Masalan: Ajib Studio intro">
+      </div>
+      <div>
+        <div class="field-label"><span class="dot"></span> MAQSAD HAVOLA</div>
+        <input type="url" id="inUrl" placeholder="https://youtube.com/watch?v=...">
+      </div>
+    </div>
+    <div id="addErr" class="err" style="display:none"></div>
+    <button class="btn btn-primary" onclick="addLink()">+ Qo&#x2019;shish</button>
+  </div>
+
+  <button class="add-toggle" id="addToggle" onclick="toggleAdd()">+ Yangi deep link qo&#x2019;shish</button>
+
+  <div class="links-wrap" id="linksWrap">
+    <div class="loading-wrap"><div class="spinner"></div>Yuklanmoqda…</div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-var LS_SERVER = 'dl_server_v3';
-var LS_LINKS  = 'dl_links_v3';
+var SUPA_URL = 'https://nznohbnenkylgwcfluca.supabase.co';
+var SUPA_KEY = 'sb_publishable_CMKVeOihqR9eX1Zzqrx_Cg_ZCZbXZsd';
+var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+var LS_SERVER = 'dl_server_v4';
 var links = [];
 var serverUrl = '';
 var addOpen = false;
+var currentUser = null;
 
-// Storage helpers
-function lsGet(k, def) {
-  try { var v = localStorage.getItem(k); return v !== null ? v : def; } catch(e) { return def; }
+// ── Auth UI ──────────────────────────────────────────────────────────────────
+function showLogin() {
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('regCard').style.display = 'none';
 }
-function lsSet(k, v) {
-  try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch(e) {}
-}
-function lsGetJSON(k, def) {
-  try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+function showRegister() {
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('regCard').style.display = 'block';
 }
 
-// Click ping via localStorage
-window.addEventListener('storage', function(e) {
-  if (e.key === 'dl_click_ping') {
-    try { var d = JSON.parse(e.newValue); recordClick(d.id); } catch(ex) {}
+async function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPass').value;
+  var err   = document.getElementById('loginErr');
+  err.classList.remove('show');
+  if (!email || !pass) { err.textContent = 'Email va parol kiriting.'; err.classList.add('show'); return; }
+  var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+  if (res.error) { err.textContent = res.error.message; err.classList.add('show'); return; }
+}
+
+async function doRegister() {
+  var email = document.getElementById('regEmail').value.trim();
+  var pass  = document.getElementById('regPass').value;
+  var err   = document.getElementById('regErr');
+  err.classList.remove('show');
+  if (!email || !pass) { err.textContent = 'Email va parol kiriting.'; err.classList.add('show'); return; }
+  if (pass.length < 6) { err.textContent = 'Parol kamida 6 ta belgi.'; err.classList.add('show'); return; }
+  var res = await sb.auth.signUp({ email: email, password: pass });
+  if (res.error) { err.textContent = res.error.message; err.classList.add('show'); return; }
+  err.style.color = 'var(--green)';
+  err.textContent = 'Tasdiqlash xati yuborildi! Email ni tekshiring.';
+  err.classList.add('show');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+}
+
+// ── Auth state ───────────────────────────────────────────────────────────────
+sb.auth.onAuthStateChange(function(event, session) {
+  if (session && session.user) {
+    currentUser = session.user;
+    document.getElementById('authWrap').style.display = 'none';
+    document.getElementById('appWrap').style.display = 'block';
+    document.getElementById('userInfo').textContent = session.user.email;
+    serverUrl = localStorage.getItem(LS_SERVER) || '';
+    if (serverUrl) document.getElementById('serverInput').value = serverUrl;
+    loadLinks();
+  } else {
+    currentUser = null;
+    document.getElementById('authWrap').style.display = 'block';
+    document.getElementById('appWrap').style.display = 'none';
+    links = [];
   }
 });
 
-// Handle ?click= param
-(function() {
-  var p = new URLSearchParams(location.search);
-  var clickId = p.get('click');
-  if (clickId) {
-    history.replaceState(null, '', location.pathname);
-    window._pendingClick = clickId;
-  }
-})();
-
-function recordClick(id) {
-  var idx = -1;
-  for (var i = 0; i < links.length; i++) { if (links[i].id === id) { idx = i; break; } }
-  if (idx === -1) return;
-  links[idx].clicks = (links[idx].clicks || 0) + 1;
-  links[idx].lastClick = Date.now();
-  saveLinks();
+// ── Load links ───────────────────────────────────────────────────────────────
+async function loadLinks() {
+  document.getElementById('linksWrap').innerHTML = '<div class="loading-wrap"><div class="spinner"></div>Yuklanmoqda…</div>';
+  var res = await sb.from('links').select('*').order('created', { ascending: false });
+  if (res.error) { toast('Xato: ' + res.error.message); links = []; }
+  else { links = res.data || []; }
   render();
 }
 
-// Init
-function init() {
-  serverUrl = lsGet(LS_SERVER, '');
-  if (serverUrl) document.getElementById('serverInput').value = serverUrl;
-  links = lsGetJSON(LS_LINKS, []);
-  if (!Array.isArray(links)) links = [];
-  if (window._pendingClick) { recordClick(window._pendingClick); window._pendingClick = null; }
-  render();
-  document.getElementById('inName').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('inUrl').focus(); });
-  document.getElementById('inUrl').addEventListener('keydown', function(e) { if (e.key === 'Enter') addLink(); });
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
-
-// Server URL
+// ── Server URL ───────────────────────────────────────────────────────────────
 function saveServer() {
   var v = document.getElementById('serverInput').value.trim();
   if (!v) { toast('URL kiriting'); return; }
@@ -162,59 +241,43 @@ function saveServer() {
     document.getElementById('serverInput').value = v;
   }
   serverUrl = v;
-  lsSet(LS_SERVER, v);
-  links = links.map(function(l) { return Object.assign({}, l, { deeplink: buildDeepLink(l.id, getSchemes(l.url)) }); });
-  saveLinks();
-  render();
+  localStorage.setItem(LS_SERVER, v);
   toast('Saqlandi');
 }
 
-function getManagerUrl() {
-  return location.origin + location.pathname;
-}
+function getManagerUrl() { return location.origin + location.pathname; }
 
-// Parsers
-function parseYouTube(url) {
+// ── Schemes ───────────────────────────────────────────────────────────────────
+function parseYT(url) {
   var pats = [/[?&]v=([a-zA-Z0-9_-]{11})/, /youtu\.be\/([a-zA-Z0-9_-]{11})/, /youtube\.com\/(?:shorts|embed|live)\/([a-zA-Z0-9_-]{11})/];
   for (var i = 0; i < pats.length; i++) { var m = url.match(pats[i]); if (m) return m[1]; }
   return null;
 }
 
 function getSchemes(url) {
-  var yt = parseYouTube(url);
-  if (yt) return {
-    appName: 'YouTube',
-    ios: 'vnd.youtube://' + yt,
-    android: 'intent://www.youtube.com/watch?v=' + yt + '#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + yt) + ';end',
-    fallback: 'https://www.youtube.com/watch?v=' + yt
-  };
+  var yt = parseYT(url);
+  if (yt) return { appName:'YouTube', ios:'vnd.youtube://'+yt, android:'intent://www.youtube.com/watch?v='+yt+'#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url='+encodeURIComponent('https://www.youtube.com/watch?v='+yt)+';end', fallback:'https://www.youtube.com/watch?v='+yt };
 
   if (/instagram\.com/.test(url)) {
-    var path = url.replace(/https?:\/\/(?:www\.)?instagram\.com/, '').split('?')[0].replace(/\/$/, '');
-    return {
-      appName: 'Instagram',
-      ios: 'instagram://www.instagram.com' + path,
-      android: 'intent://www.instagram.com' + path + '#Intent;scheme=https;package=com.instagram.android;S.browser_fallback_url=' + encodeURIComponent(url) + ';end',
-      fallback: url
-    };
+    var path = url.replace(/https?:\/\/(?:www\.)?instagram\.com/,'').split('?')[0].replace(/\/$/,'');
+    return { appName:'Instagram', ios:'instagram://www.instagram.com'+path, android:'intent://www.instagram.com'+path+'#Intent;scheme=https;package=com.instagram.android;S.browser_fallback_url='+encodeURIComponent(url)+';end', fallback:url };
   }
-
   var sp = url.match(/spotify\.com\/(track|album|playlist|artist|episode)\/([a-zA-Z0-9]+)/);
-  if (sp) { var su = 'spotify:' + sp[1] + ':' + sp[2]; return { appName: 'Spotify', ios: su, android: su, fallback: url }; }
+  if (sp) { var su='spotify:'+sp[1]+':'+sp[2]; return { appName:'Spotify', ios:su, android:su, fallback:url }; }
 
   var tg = url.match(/t\.me\/([a-zA-Z0-9_]+)/);
-  if (tg) { var ts = 'tg://resolve?domain=' + tg[1]; return { appName: 'Telegram', ios: ts, android: ts, fallback: url }; }
+  if (tg) { var ts='tg://resolve?domain='+tg[1]; return { appName:'Telegram', ios:ts, android:ts, fallback:url }; }
 
   var tw = url.match(/(?:twitter|x)\.com\/([a-zA-Z0-9_]+)(?:\/status\/(\d+))?/);
-  if (tw) { var tws = tw[2] ? 'twitter://status?id=' + tw[2] : 'twitter://user?screen_name=' + tw[1]; return { appName: 'Twitter/X', ios: tws, android: tws, fallback: url }; }
+  if (tw) { var tws=tw[2]?'twitter://status?id='+tw[2]:'twitter://user?screen_name='+tw[1]; return { appName:'Twitter/X', ios:tws, android:tws, fallback:url }; }
 
   var tt = url.match(/tiktok\.com\/@([^/]+)\/video\/(\d+)/);
-  if (tt) { var tts = 'snssdk1233://aweme/detail/?id=' + tt[2]; return { appName: 'TikTok', ios: tts, android: tts, fallback: url }; }
+  if (tt) { var tts='snssdk1233://aweme/detail/?id='+tt[2]; return { appName:'TikTok', ios:tts, android:tts, fallback:url }; }
 
   var rd = url.match(/reddit\.com(\/r\/[^?#]+)/);
-  if (rd) return { appName: 'Reddit', ios: 'reddit://reddit.com' + rd[1], android: 'reddit://reddit.com' + rd[1], fallback: url };
+  if (rd) return { appName:'Reddit', ios:'reddit://reddit.com'+rd[1], android:'reddit://reddit.com'+rd[1], fallback:url };
 
-  return { appName: 'Browser', ios: null, android: null, fallback: url };
+  return { appName:'Browser', ios:null, android:null, fallback:url };
 }
 
 function buildDeepLink(id, schemes) {
@@ -228,84 +291,95 @@ function buildDeepLink(id, schemes) {
   return serverUrl + '?' + p.toString();
 }
 
-// Toggle
+// ── Toggle add ────────────────────────────────────────────────────────────────
 function toggleAdd() {
   addOpen = !addOpen;
   document.getElementById('addCard').style.display = addOpen ? 'block' : 'none';
   document.getElementById('addToggle').textContent = addOpen ? 'x Yopish' : '+ Yangi deep link qo\u2019shish';
-  if (addOpen) setTimeout(function() { document.getElementById('inName').focus(); }, 50);
+  if (addOpen) setTimeout(function(){ document.getElementById('inName').focus(); }, 50);
 }
 
-// Add
-function addLink() {
+// ── Add link ──────────────────────────────────────────────────────────────────
+async function addLink() {
   var name = document.getElementById('inName').value.trim();
   var url  = document.getElementById('inUrl').value.trim();
   var err  = document.getElementById('addErr');
-  err.classList.remove('show');
+  err.classList.remove('show'); err.style.display = 'none';
 
-  if (!name) { err.textContent = 'Nom kiriting.'; err.classList.add('show'); return; }
-  if (!url)  { err.textContent = 'Havola kiriting.'; err.classList.add('show'); return; }
-  if (!serverUrl) { err.textContent = 'Avval server URL ni saqlang.'; err.classList.add('show'); return; }
-
+  if (!name) { err.textContent='Nom kiriting.'; err.style.display='block'; err.classList.add('show'); return; }
+  if (!url)  { err.textContent='Havola kiriting.'; err.style.display='block'; err.classList.add('show'); return; }
+  if (!serverUrl) { err.textContent='Avval server URL ni saqlang.'; err.style.display='block'; err.classList.add('show'); return; }
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  try { new URL(url); } catch(e) { err.textContent = "Noto'g'ri URL."; err.classList.add('show'); return; }
 
-  var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  var id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
   var schemes = getSchemes(url);
   var deeplink = buildDeepLink(id, schemes);
 
-  links.unshift({ id: id, name: name, url: url, deeplink: deeplink, appName: schemes.appName, clicks: 0, created: Date.now() });
-  saveLinks();
-  render();
+  var row = { id:id, user_id:currentUser.id, name:name, url:url, deeplink:deeplink, app_name:schemes.appName, clicks:0, last_click:null, created:Date.now() };
+  var res = await sb.from('links').insert(row);
+  if (res.error) { err.textContent = res.error.message; err.style.display='block'; err.classList.add('show'); return; }
 
+  links.unshift(row);
+  render();
   document.getElementById('inName').value = '';
   document.getElementById('inUrl').value  = '';
   if (addOpen) toggleAdd();
   toast('Link qo\u2019shildi');
 }
 
-// Delete
-function deleteLink(id) {
-  if (!confirm('Bu linkni o\u2019chirasizmi?')) return;
-  links = links.filter(function(l) { return l.id !== id; });
-  saveLinks();
+// ── Delete ────────────────────────────────────────────────────────────────────
+async function deleteLink(id) {
+  if (!confirm('O\u02bcchirasizmi?')) return;
+  await sb.from('links').delete().eq('id', id);
+  links = links.filter(function(l){ return l.id !== id; });
   render();
-  toast("O'chirildi");
+  toast('O\u02bcchirildi');
 }
 
-// Save
-function saveLinks() { lsSet(LS_LINKS, links); }
-
-// Copy
+// ── Copy ──────────────────────────────────────────────────────────────────────
 function copyFromCard(id) {
-  var card = document.getElementById('lc-' + id);
+  var card = document.getElementById('lc-'+id);
   if (!card) return;
   var dl = card.getAttribute('data-dl');
   if (!dl) return;
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(dl).then(function() { toast('Nusxa olindi'); }).catch(function() { fallbackCopy(dl); });
-  } else {
-    fallbackCopy(dl);
-  }
+    navigator.clipboard.writeText(dl).then(function(){ toast('Nusxa olindi'); }).catch(function(){ fbCopy(dl); });
+  } else { fbCopy(dl); }
 }
-
-function fallbackCopy(txt) {
+function fbCopy(txt) {
   var ta = document.createElement('textarea');
-  ta.value = txt;
-  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
+  ta.value = txt; ta.style.cssText='position:fixed;top:0;left:0;opacity:0;';
+  document.body.appendChild(ta); ta.focus(); ta.select();
   try { document.execCommand('copy'); toast('Nusxa olindi'); } catch(e) { toast('Qolda nusxa oling'); }
   document.body.removeChild(ta);
 }
 
-// Render
-var ICONS = { YouTube: '\u25b6', Instagram: '\u25c6', Spotify: '\u25cf', Telegram: '\u2708', 'Twitter/X': '\u2726', TikTok: '\u25b8', Reddit: '\u25c8', Browser: '\u2295' };
+// ── Click tracking ────────────────────────────────────────────────────────────
+window.addEventListener('storage', function(e) {
+  if (e.key === 'dl_click_ping') {
+    try { var d = JSON.parse(e.newValue); recordClick(d.id); } catch(ex) {}
+  }
+});
+(function(){
+  var p = new URLSearchParams(location.search);
+  var cid = p.get('click');
+  if (cid) { history.replaceState(null,'',location.pathname); window._pendingClick = cid; }
+})();
 
-function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+async function recordClick(id) {
+  var idx = -1;
+  for (var i=0;i<links.length;i++){ if(links[i].id===id){idx=i;break;} }
+  if (idx===-1) return;
+  links[idx].clicks = (links[idx].clicks||0)+1;
+  links[idx].last_click = Date.now();
+  await sb.from('links').update({ clicks:links[idx].clicks, last_click:links[idx].last_click }).eq('id',id);
+  render();
 }
+
+// ── Render ────────────────────────────────────────────────────────────────────
+var ICONS = { YouTube:'\u25b6', Instagram:'\u25c6', Spotify:'\u25cf', Telegram:'\u2708', 'Twitter/X':'\u2726', TikTok:'\u25b8', Reddit:'\u25c8', Browser:'\u2295' };
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function render() {
   var wrap = document.getElementById('linksWrap');
@@ -314,35 +388,45 @@ function render() {
     return;
   }
   var html = '';
-  for (var i = 0; i < links.length; i++) {
+  for (var i=0;i<links.length;i++) {
     var l = links[i];
-    var icon = ICONS[l.appName] || '\u2295';
-    var date = new Date(l.created).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    var lastClick = l.lastClick ? 'Oxirgi: ' + new Date(l.lastClick).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : '';
+    var icon = ICONS[l.app_name] || '\u2295';
+    var date = new Date(l.created).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var lastClick = l.last_click ? 'Oxirgi: '+new Date(l.last_click).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}) : '';
     var dl = l.deeplink || '';
-    var dlShort = dl.length > 70 ? dl.slice(0, 70) + '...' : dl;
-    html += '<div class="link-card" id="lc-' + l.id + '" data-dl="' + esc(dl) + '">';
+    var dlShort = dl.length>70 ? dl.slice(0,70)+'...' : dl;
+    html += '<div class="link-card" id="lc-'+l.id+'" data-dl="'+esc(dl)+'">';
     html += '<div class="lc-top">';
-    html += '<div class="lc-info"><div class="lc-name">' + esc(l.name) + '</div><div class="lc-meta">' + icon + ' ' + l.appName + ' &middot; ' + date + '</div></div>';
+    html += '<div class="lc-info"><div class="lc-name">'+esc(l.name)+'</div><div class="lc-meta">'+icon+' '+l.app_name+' &middot; '+date+'</div></div>';
     html += '<div class="lc-actions">';
-    html += '<button class="btn btn-ghost" onclick="copyFromCard(\'' + l.id + '\')">Nusxa</button>';
-    html += '<button class="btn-danger" onclick="deleteLink(\'' + l.id + '\')">O\u02bcchir</button>';
+    html += '<button class="btn btn-ghost btn-sm" onclick="copyFromCard(\''+l.id+'\')">Nusxa</button>';
+    html += '<button class="btn-danger-sm" onclick="deleteLink(\''+l.id+'\')">O\u02bcchir</button>';
     html += '</div></div>';
-    html += '<div class="lc-deeplink" onclick="copyFromCard(\'' + l.id + '\')">' + esc(dlShort) + '</div>';
-    html += '<div class="lc-stats"><span class="stat-num">' + (l.clicks || 0) + '</span><span class="stat-lbl">BOSISH</span>';
-    if (lastClick) html += '<span class="stat-date">' + lastClick + '</span>';
+    html += '<div class="lc-deeplink" onclick="copyFromCard(\''+l.id+'\')">'+esc(dlShort)+'</div>';
+    html += '<div class="lc-stats"><span class="stat-num">'+(l.clicks||0)+'</span><span class="stat-lbl">BOSISH</span>';
+    if (lastClick) html += '<span class="stat-date">'+lastClick+'</span>';
     html += '</div></div>';
   }
   wrap.innerHTML = html;
+  if (window._pendingClick) { recordClick(window._pendingClick); window._pendingClick=null; }
 }
 
-// Toast
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(function() { el.classList.remove('show'); }, 2200);
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2200);
 }
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key==='Enter' && e.target.id==='loginEmail') document.getElementById('loginPass').focus();
+  if (e.key==='Enter' && e.target.id==='loginPass') doLogin();
+  if (e.key==='Enter' && e.target.id==='regEmail') document.getElementById('regPass').focus();
+  if (e.key==='Enter' && e.target.id==='regPass') doRegister();
+  if (e.key==='Enter' && e.target.id==='inName') document.getElementById('inUrl').focus();
+  if (e.key==='Enter' && e.target.id==='inUrl') addLink();
+});
 </script>
 </body>
 </html>
