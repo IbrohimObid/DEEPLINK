@@ -98,7 +98,7 @@ h1 span{color:var(--green)}
     <div class="user-info" id="userInfo"></div>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()">Chiqish</button>
   </div>
-  <div class="server-bar">
+  <div class="server-bar" style="display:none">
     <span class="server-lbl">REDIRECT URL</span>
     <input type="url" id="serverInput" placeholder="https://ibrohimobid.github.io/DEEPLINK/redirect.html" autocomplete="off" spellcheck="false">
     <button class="btn btn-ghost btn-sm" onclick="saveServer()">Saqlash</button>
@@ -132,6 +132,7 @@ var SUPA_KEY = 'sb_publishable_CMKVeOihqR9eX1Zzqrx_Cg_ZCZbXZsd';
 var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 var LS_SERVER = 'dl_server_v4';
 var BASE_URL = 'https://ibrohimobid.github.io/DEEPLINK/r.html?c=';
+var DEFAULT_SERVER = 'https://ibrohimobid.github.io/DEEPLINK/redirect.html';
 var links = [];
 var serverUrl = '';
 var addOpen = false;
@@ -163,8 +164,9 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('authWrap').style.display = 'none';
     document.getElementById('appWrap').style.display = 'block';
     document.getElementById('userInfo').textContent = session.user.email;
-    serverUrl = localStorage.getItem(LS_SERVER) || '';
-    if (serverUrl) document.getElementById('serverInput').value = serverUrl;
+    serverUrl = localStorage.getItem(LS_SERVER) || DEFAULT_SERVER;
+    localStorage.setItem(LS_SERVER, serverUrl);
+    document.getElementById('serverInput').value = serverUrl;
     loadLinks();
   } else {
     currentUser = null;
