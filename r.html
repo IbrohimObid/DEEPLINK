@@ -26,48 +26,26 @@ var SUPA_KEY = 'sb_publishable_CMKVeOihqR9eX1Zzqrx_Cg_ZCZbXZsd';
 var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 (async function(){
-  // URL dan ?c= parametrini o'qish
-  var p = new URLSearchParams(location.search);
+  var p    = new URLSearchParams(location.search);
   var code = p.get('c');
 
-  document.getElementById('st').textContent = 'Kod: ' + (code || 'YOQ');
+  if (!code) { document.getElementById('st').textContent = 'Kod topilmadi'; return; }
 
-  if (!code) {
-    document.getElementById('st').textContent = 'Kod topilmadi';
-    return;
-  }
-
-  // Supabase dan o'qish
   var res = await sb
     .from('links')
-    .select('id, deeplink, clicks, app_name, url')
+    .select('id, deeplink, clicks, url')
     .eq('short_code', code)
     .maybeSingle();
 
-  if (res.error) {
-    document.getElementById('st').textContent = 'Xato: ' + res.error.message;
+  if (res.error || !res.data) {
+    document.getElementById('st').textContent = 'Link topilmadi';
     return;
   }
 
-  if (!res.data) {
-    document.getElementById('st').textContent = 'Link topilmadi (kod: ' + code + ')';
-    return;
-  }
-
-  var row = res.data;
-
-  // Click sanash (xato bo'lsa ham davom etamiz)
-  sb.from('links')
-    .update({ clicks: (row.clicks || 0) + 1, last_click: Date.now() })
-    .eq('id', row.id)
-    .then(function(){});
-
-  // deeplink parametrlarini o'qish
+  var row      = res.data;
   var fallback = row.url || 'https://youtube.com';
-  document.getElementById('ml').href = fallback;
-
-  var ios = null;
-  var android = null;
+  var ios      = null;
+  var android  = null;
 
   try {
     var dlUrl = new URL(row.deeplink);
@@ -77,39 +55,56 @@ var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
     if (fb) fallback = fb;
   } catch(e) {}
 
+  document.getElementById('ml').href = fallback;
+
+  // Click sanash — redirect dan OLDIN, har qanday qurilmada
+  try {
+    await sb.from('links').update({
+      clicks:     (row.clicks || 0) + 1,
+      last_click: Date.now()
+    }).eq('id', row.id);
+  } catch(e) {}
+
+  // Qurilma aniqlash va yo'naltirish
   var ua        = navigator.userAgent;
   var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
   var isAndroid = /Android/.test(ua);
 
+  function goFallback() { window.location.replace(fallback); }
+
   if (!isIOS && !isAndroid) {
-    document.getElementById('st').textContent = 'Desktop — yo\'naltirmoqda…';
-    window.location.replace(fallback);
+    goFallback();
     return;
   }
 
   if (isIOS && ios) {
     document.getElementById('st').textContent = 'iOS — app ochilmoqda…';
-    var gone = false;
-    var timer = setTimeout(function(){ if (!gone){ gone=true; window.location.replace(fallback); } }, 2000);
-    document.addEventListener('visibilitychange', function(){ if (document.hidden){ gone=true; clearTimeout(timer); } });
+    var doneIOS = false;
+    var tIOS = setTimeout(function(){ if (!doneIOS){ doneIOS=true; goFallback(); } }, 2500);
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden){ doneIOS=true; clearTimeout(tIOS); }
+    });
     window.location.href = ios;
     return;
   }
 
   if (isAndroid && android) {
     document.getElementById('st').textContent = 'Android — app ochilmoqda…';
+    // intent:// — Android tizimi o'zi boshqaradi, fallback avtomatik
     if (android.indexOf('intent://') === 0) {
       window.location.href = android;
       return;
     }
-    var gone2 = false;
-    var timer2 = setTimeout(function(){ if (!gone2){ gone2=true; window.location.replace(fallback); } }, 2000);
-    document.addEventListener('visibilitychange', function(){ if (document.hidden){ gone2=true; clearTimeout(timer2); } });
+    var doneAnd = false;
+    var tAnd = setTimeout(function(){ if (!doneAnd){ doneAnd=true; goFallback(); } }, 2500);
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden){ doneAnd=true; clearTimeout(tAnd); }
+    });
     window.location.href = android;
     return;
   }
 
-  window.location.replace(fallback);
+  goFallback();
 })();
 </script>
 </body></html>
