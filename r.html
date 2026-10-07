@@ -18,7 +18,7 @@ p{font-size:11px;color:#5a6b5e;margin:3px 0}
 <div class="spinner"></div>
 <h2>Yo'naltirilmoqda…</h2>
 <p id="st">Yuklanmoqda</p>
-<div class="manual"><a href="#" id="ml">Avtomatik ochilmasa bosing</a></div>
+<div class="manual"><a href="https://ibrohimobid.github.io/DEEPLINK/" id="ml">Avtomatik ochilmasa bosing</a></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 var SUPA_URL = 'https://nznohbnenkylgwcfluca.supabase.co';
@@ -26,32 +26,58 @@ var SUPA_KEY = 'sb_publishable_CMKVeOihqR9eX1Zzqrx_Cg_ZCZbXZsd';
 var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 (async function(){
-  // short_code = path ning oxirgi qismi
-  var code = location.pathname.split('/').filter(Boolean).pop();
-  if (!code) { document.getElementById('st').textContent = 'Kod topilmadi'; return; }
+  // URL dan ?c= parametrini o'qish
+  var p = new URLSearchParams(location.search);
+  var code = p.get('c');
 
-  var res = await sb.from('links').select('id,deeplink,clicks,app_name').eq('short_code', code).single();
-  if (res.error || !res.data) {
-    document.getElementById('st').textContent = 'Link topilmadi';
-    document.getElementById('ml').href = 'https://ibrohimobid.github.io/DEEPLINK/';
+  document.getElementById('st').textContent = 'Kod: ' + (code || 'YOQ');
+
+  if (!code) {
+    document.getElementById('st').textContent = 'Kod topilmadi';
+    return;
+  }
+
+  // Supabase dan o'qish
+  var res = await sb
+    .from('links')
+    .select('id, deeplink, clicks, app_name, url')
+    .eq('short_code', code)
+    .maybeSingle();
+
+  if (res.error) {
+    document.getElementById('st').textContent = 'Xato: ' + res.error.message;
+    return;
+  }
+
+  if (!res.data) {
+    document.getElementById('st').textContent = 'Link topilmadi (kod: ' + code + ')';
     return;
   }
 
   var row = res.data;
 
-  // Click sanash
-  sb.from('links').update({ clicks: (row.clicks||0)+1, last_click: Date.now() }).eq('id', row.id).then(function(){});
+  // Click sanash (xato bo'lsa ham davom etamiz)
+  sb.from('links')
+    .update({ clicks: (row.clicks || 0) + 1, last_click: Date.now() })
+    .eq('id', row.id)
+    .then(function(){});
 
-  // deeplink dan parametrlarni o'qish
-  var dl = row.deeplink;
-  var dlUrl = new URL(dl);
-  var ios      = dlUrl.searchParams.get('ios');
-  var android  = dlUrl.searchParams.get('android');
-  var fallback = dlUrl.searchParams.get('url') || dl;
-
+  // deeplink parametrlarini o'qish
+  var fallback = row.url || 'https://youtube.com';
   document.getElementById('ml').href = fallback;
 
-  var ua = navigator.userAgent;
+  var ios = null;
+  var android = null;
+
+  try {
+    var dlUrl = new URL(row.deeplink);
+    ios     = dlUrl.searchParams.get('ios');
+    android = dlUrl.searchParams.get('android');
+    var fb  = dlUrl.searchParams.get('url');
+    if (fb) fallback = fb;
+  } catch(e) {}
+
+  var ua        = navigator.userAgent;
   var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
   var isAndroid = /Android/.test(ua);
 
@@ -64,8 +90,8 @@ var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
   if (isIOS && ios) {
     document.getElementById('st').textContent = 'iOS — app ochilmoqda…';
     var gone = false;
-    var timer = setTimeout(function(){ if(!gone){ gone=true; window.location.replace(fallback); } }, 2000);
-    document.addEventListener('visibilitychange', function(){ if(document.hidden){ gone=true; clearTimeout(timer); } });
+    var timer = setTimeout(function(){ if (!gone){ gone=true; window.location.replace(fallback); } }, 2000);
+    document.addEventListener('visibilitychange', function(){ if (document.hidden){ gone=true; clearTimeout(timer); } });
     window.location.href = ios;
     return;
   }
@@ -77,8 +103,8 @@ var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
       return;
     }
     var gone2 = false;
-    var timer2 = setTimeout(function(){ if(!gone2){ gone2=true; window.location.replace(fallback); } }, 2000);
-    document.addEventListener('visibilitychange', function(){ if(document.hidden){ gone2=true; clearTimeout(timer2); } });
+    var timer2 = setTimeout(function(){ if (!gone2){ gone2=true; window.location.replace(fallback); } }, 2000);
+    document.addEventListener('visibilitychange', function(){ if (document.hidden){ gone2=true; clearTimeout(timer2); } });
     window.location.href = android;
     return;
   }
