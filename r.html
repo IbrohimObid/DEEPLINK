@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yo'naltirilmoqda…</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0f0e;color:#e8ede9;font-family:monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+.spinner{width:28px;height:28px;border:2px solid #222824;border-top-color:#39ff7a;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+h2{font-size:15px;color:#39ff7a;margin-bottom:6px;font-weight:600}
+p{font-size:11px;color:#5a6b5e;margin:3px 0}
+.manual{margin-top:24px;font-size:12px}
+.manual a{color:#39ff7a;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<h2>Yo'naltirilmoqda…</h2>
+<p id="st">Yuklanmoqda</p>
+<div class="manual"><a href="#" id="ml">Avtomatik ochilmasa bosing</a></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+var SUPA_URL = 'https://nznohbnenkylgwcfluca.supabase.co';
+var SUPA_KEY = 'sb_publishable_CMKVeOihqR9eX1Zzqrx_Cg_ZCZbXZsd';
+var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+(async function(){
+  // short_code = path ning oxirgi qismi
+  var code = location.pathname.split('/').filter(Boolean).pop();
+  if (!code) { document.getElementById('st').textContent = 'Kod topilmadi'; return; }
+
+  var res = await sb.from('links').select('id,deeplink,clicks,app_name').eq('short_code', code).single();
+  if (res.error || !res.data) {
+    document.getElementById('st').textContent = 'Link topilmadi';
+    document.getElementById('ml').href = 'https://ibrohimobid.github.io/DEEPLINK/';
+    return;
+  }
+
+  var row = res.data;
+
+  // Click sanash
+  sb.from('links').update({ clicks: (row.clicks||0)+1, last_click: Date.now() }).eq('id', row.id).then(function(){});
+
+  // deeplink dan parametrlarni o'qish
+  var dl = row.deeplink;
+  var dlUrl = new URL(dl);
+  var ios      = dlUrl.searchParams.get('ios');
+  var android  = dlUrl.searchParams.get('android');
+  var fallback = dlUrl.searchParams.get('url') || dl;
+
+  document.getElementById('ml').href = fallback;
+
+  var ua = navigator.userAgent;
+  var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  var isAndroid = /Android/.test(ua);
+
+  if (!isIOS && !isAndroid) {
+    document.getElementById('st').textContent = 'Desktop — yo\'naltirmoqda…';
+    window.location.replace(fallback);
+    return;
+  }
+
+  if (isIOS && ios) {
+    document.getElementById('st').textContent = 'iOS — app ochilmoqda…';
+    var gone = false;
+    var timer = setTimeout(function(){ if(!gone){ gone=true; window.location.replace(fallback); } }, 2000);
+    document.addEventListener('visibilitychange', function(){ if(document.hidden){ gone=true; clearTimeout(timer); } });
+    window.location.href = ios;
+    return;
+  }
+
+  if (isAndroid && android) {
+    document.getElementById('st').textContent = 'Android — app ochilmoqda…';
+    if (android.indexOf('intent://') === 0) {
+      window.location.href = android;
+      return;
+    }
+    var gone2 = false;
+    var timer2 = setTimeout(function(){ if(!gone2){ gone2=true; window.location.replace(fallback); } }, 2000);
+    document.addEventListener('visibilitychange', function(){ if(document.hidden){ gone2=true; clearTimeout(timer2); } });
+    window.location.href = android;
+    return;
+  }
+
+  window.location.replace(fallback);
+})();
+</script>
+</body></html>
